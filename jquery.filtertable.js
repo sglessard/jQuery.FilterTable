@@ -38,7 +38,8 @@
 				quickListClass:    'quick',             // class of each quick list item
 				quickListGroupTag: '',                  // tag surrounding quick list items (e.g., ul)
 				quickListTag:      'a',                 // tag type of each quick list item (e.g., a or li)
-				visibleClass:      'visible'            // class applied to visible rows
+				visibleClass:      'visible',           // class applied to visible rows
+				searchElementIds:  []                   // list of filter element ids (can be input or select elements) Ex.: ['#my-input-filter','#my-select-filter'] 
 			},
 			hsc = function(text) { // mimic PHP's htmlspecialchars() function
 				return text.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -77,20 +78,36 @@
 					container.addClass(settings.containerClass);
 				}
 				container.prepend(settings.label+' '); // add the label for the filter field
-				filter = $('<input type="'+settings.inputType+'" placeholder="'+settings.placeholder+'" name="'+settings.inputName+'" />'); // build the filter field
-				if ($.fn.bindWithDelay) { // does bindWithDelay() exist?
-					filter.bindWithDelay('keyup', function() { // bind doFiltering() to keyup (delayed)
-						doFiltering(t, $(this).val());
-					}, 200);
-				} else { // just bind to onKeyUp
-					filter.bind('keyup', function() { // bind doFiltering() to keyup
-						doFiltering(t, $(this).val());
-					});
-				} // keyup binding block
-				filter.bind('click search', function() { // bind doFiltering() to click and search events
-					doFiltering(t, $(this).val());
+				if (settings.searchElementIds.length < 1) {
+					filter = $('<input type="'+settings.inputType+'" placeholder="'+settings.placeholder+'" name="'+settings.inputName+'" id="jft-'+settings.inputName+'" />'); // build the filter field
+					settings.searchElementIds = ['#jft-'+settings.inputName];
+					container.append(filter); // add the filter field to the container
+					t.before(container); // add the filter field and quick list container to just before the table
+				}
+				$.each(settings.searchElementIds,function(index,elementId) {
+					filter = $(elementId) // get the filter field
+					if (filter.length < 1) return true; // continue if not exist
+					// Input text
+					if (filter.get(0).tagName.toLowerCase() == 'input') {
+						if ($.fn.bindWithDelay) { // does bindWithDelay() exist?
+							filter.bindWithDelay('keyup', function() { // bind doFiltering() to keyup (delayed)
+								doFiltering(t, $(this).val());
+							}, 200);
+						} else { // just bind to onKeyUp
+							filter.bind('keyup', function() { // bind doFiltering() to keyup
+								doFiltering(t, $(this).val());
+							});
+						} // keyup binding block
+						filter.bind('click search', function() { // bind doFiltering() to click and search events
+							doFiltering(t, $(this).val());
+						});
+					// Select object
+					} else if (filter.get(0).tagName.toLowerCase() == 'select') {
+						filter.change(function() { // bind doFiltering() to keyup
+							doFiltering(t, $(this).val());
+						});
+					}
 				});
-				container.append(filter); // add the filter field to the container
 				if (settings.quickList.length>0) { // are there any quick list items to add?
 					quicks = settings.quickListGroupTag ? $('<'+settings.quickListGroupTag+' />') : container;
 					$.each(settings.quickList, function(index, value) { // for each quick list item...
@@ -109,7 +126,6 @@
 						container.append(quicks); // add the quick list groups container to the DOM if it isn't already there
 					}
 				} // if quick list items
-				t.before(container); // add the filter field and quick list container to just before the table
 			} // if the functionality should be added
 		}); // return this.each
 	}; // $.fn.filterTable
