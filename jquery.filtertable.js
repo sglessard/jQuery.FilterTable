@@ -66,6 +66,12 @@
 				}
 			}; // doFiltering()
 
+		var doReseting = function(activeId) {
+				$.each(settings.searchElementIds, function(_index,_elementId) {
+					if (_elementId != activeId) $(_elementId).val('');
+				});
+			};
+
 		return this.each(function() {
 			var t = $(this), // cache the table
 				tbody = t.find('tbody'), // cache the tbody
@@ -88,7 +94,7 @@
 					filter = $(elementId) // get the filter field
 					if (filter.length < 1) return true; // continue if not exist
 					// Input text
-					if (filter.get(0).tagName.toLowerCase() == 'input') {
+					if (filter.get(0).tagName == 'INPUT') {
 						if ($.fn.bindWithDelay) { // does bindWithDelay() exist?
 							filter.bindWithDelay('keyup', function() { // bind doFiltering() to keyup (delayed)
 								doFiltering(t, $(this).val());
@@ -99,11 +105,13 @@
 							});
 						} // keyup binding block
 						filter.bind('click search', function() { // bind doFiltering() to click and search events
+							doReseting(elementId);
 							doFiltering(t, $(this).val());
 						});
 					// Select object
-					} else if (filter.get(0).tagName.toLowerCase() == 'select') {
-						filter.change(function() { // bind doFiltering() to keyup
+					} else if (filter.get(0).tagName == 'SELECT') {
+						filter.change(function() { // bind doFiltering() to select
+							doReseting(elementId);
 							doFiltering(t, $(this).val());
 						});
 					}
