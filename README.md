@@ -48,7 +48,7 @@ $('table').filterTable(); //if this code appears after your tables; otherwise, i
 | `quickListGroupTag` | string | '' | Tag name surrounding quick list items (e.g., `ul`) |
 | `quickListTag` | string | a | Tag name of each quick list item (e.g., `a` or `li`) |
 | `visibleClass` | string | visible | Class applied to visible rows |
-| `searchElementIds` | array | [] | List of filter element id(s) (`input` or `select` elements) e.g., `['#my-input-filter','#my-select-filter']` |
+| `filterElementIds` | array | [] | List of filter element id(s) (`input` or `select` elements) e.g., `['#my-input-filter','#my-select-filter']` |
 
 ## Styling
 
