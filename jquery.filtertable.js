@@ -39,14 +39,14 @@
 				quickListGroupTag: '',                  // tag surrounding quick list items (e.g., ul)
 				quickListTag:      'a',                 // tag type of each quick list item (e.g., a or li)
 				visibleClass:      'visible',           // class applied to visible rows
-				searchElementIds:  []                   // list of filter element ids (can be input or select elements) Ex.: ['#my-input-filter','#my-select-filter'] 
+				filterElementIds:  []                   // list of filter element ids (can be input or select elements) Ex.: ['#my-input-filter','#my-select-filter'] SELECT element can be linked to a table column by adding the element id as a <th> class.
 			},
 			hsc = function(text) { // mimic PHP's htmlspecialchars() function
 				return text.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 			},
 			settings = $.extend({}, defaults, options); // merge the user's settings into the defaults
 
-		var doFiltering = function(table, q) { // handle the actual table filtering
+		var doFiltering = function(table, q, classRow) { // handle the actual table filtering
 				var tbody=table.find('tbody'); // cache the tbody element
 				if (q==='') { // if the filtering query is blank
 					tbody.find('tr').show().addClass(settings.visibleClass); // show all rows
@@ -59,7 +59,13 @@
 					if (settings.hideTFootOnFilter) { // hide footer if the setting was specified
 						table.find('tfoot').hide();
 					}
-					tbody.find('td').removeClass(settings.highlightClass).filter(':filterTableFind("'+q.replace(/(['"])/g,'\\$1')+'")').addClass(settings.highlightClass).closest('tr').show().addClass(settings.visibleClass); // highlight (class=alt) only the cells that match the query and show their rows
+					var table_td_selector = 'td';
+					if (typeof classRow != 'undefined' && $('th.'+classRow).length > 0) { // if a filterelementid is linked to a column (<th>)
+						var th_index = $('th.'+classRow).get(0).cellIndex+1;
+						table_td_selector += ':nth-child('+th_index+')';
+					}
+					tbody.find('td').removeClass(settings.highlightClass); // remove highlights
+					tbody.find(table_td_selector).filter(':filterTableFind("'+q.replace(/(['"])/g,'\\$1')+'")').addClass(settings.highlightClass).closest('tr').show().addClass(settings.visibleClass); // highlight (class=alt) only the cells that match the query and show their rows
 				}
 				if (settings.callback) { // call the callback function
 					settings.callback(q, table);
@@ -67,7 +73,7 @@
 			}; // doFiltering()
 
 		var doReseting = function(activeId) {
-				$.each(settings.searchElementIds, function(_index,_elementId) {
+				$.each(settings.filterElementIds, function(_index,_elementId) {
 					if (_elementId != activeId) $(_elementId).val('');
 				});
 			};
@@ -84,13 +90,13 @@
 					container.addClass(settings.containerClass);
 				}
 				container.prepend(settings.label+' '); // add the label for the filter field
-				if (settings.searchElementIds.length < 1) {
+				if (settings.filterElementIds.length < 1) {
 					filter = $('<input type="'+settings.inputType+'" placeholder="'+settings.placeholder+'" name="'+settings.inputName+'" id="jft-'+settings.inputName+'" />'); // build the filter field
-					settings.searchElementIds = ['#jft-'+settings.inputName];
+					settings.filterElementIds = ['#jft-'+settings.inputName];
 					container.append(filter); // add the filter field to the container
 					t.before(container); // add the filter field and quick list container to just before the table
 				}
-				$.each(settings.searchElementIds,function(index,elementId) {
+				$.each(settings.filterElementIds,function(index,elementId) {
 					filter = $(elementId) // get the filter field
 					if (filter.length < 1) return true; // continue if not exist
 					// Input text
@@ -112,7 +118,7 @@
 					} else if (filter.get(0).tagName == 'SELECT') {
 						filter.change(function() { // bind doFiltering() to select
 							doReseting(elementId);
-							doFiltering(t, $(this).val());
+							doFiltering(t, $(this).val(),$(this).attr('id'));
 						});
 					}
 				});

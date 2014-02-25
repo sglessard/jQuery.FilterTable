@@ -12,7 +12,7 @@
 		};
 		$('table').filterTable({
 			callback: function(term, table) { stripeTable(table); }, //call the striping after every change to the filter term
-			searchElementIds:  ['#filter-some-input-keyword','#filter-some-select','#filter-some-other-select']
+			filterElementIds:  ['#filter-some-input-keyword','#filter-some-select','#filter-some-other-select']
 		});
 		stripeTable($('table')); //stripe the table for the first time
 
@@ -67,7 +67,7 @@
 			<tr>
 				<th scope="col" title="President Number">#</th>
 				<th scope="col">President</th>
-				<th scope="col">Terms</th>
+				<th scope="col" class="filter-some-select">Terms</th>
 				<th scope="col">Tenure</th>
 			</tr>
 		</thead>
@@ -116,6 +116,7 @@
 			<tr><td>42</td><td>William Jefferson Clinton</td><td>two</td><td>1993-2001</td></tr>
 			<tr><td>43</td><td>George Walker Bush</td><td>two</td><td>2001-2009</td></tr>
 			<tr><td>44</td><td>Barack Hussein Obama</td><td>one</td><td>2009-</td></tr>
+			<tr><td>45</td><td>Testing one two</td><td>one</td><td>2100-2101</td></tr>
 		</tbody>
 	</table>
 	<p><em>Data as of October, 2012.</em></p>
